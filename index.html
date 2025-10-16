@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BHS Baddies</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="title-section">
+    <h1><a href="index.html">BHS Baddies</a></h1>
+    <div class="grade-links">
+      <a href="9.html">9th</a>
+      <a href="10.html">10th</a>
+      <a href="11.html">11th</a>
+      <a href="12.html">12th</a>
+      <a href="create.html" class="btn">Create Your Ranking</a>
+    </div>
+  </div>
+</header>
+
+<main class="flex-layout">
+  <div class="description">
+    <h2>Welcome to BHS Baddies!</h2>
+    <p>Have fun ranking! You know what they say, first is the worst, second is the best.....</p>
+    <a href="create.html" class="btn2">Create Your Ranking</a>
+  </div>
+
+  <div class="latest-rankings">
+    <h2>Latest Rankings</h2>
+    <div id="latestRankings"></div>
+  </div>
+</main>
+
+<script>
+function timeAgo(timestamp){
+  const now=Date.now(), diff=now-timestamp;
+  const sec=Math.floor(diff/1000), min=Math.floor(sec/60), hr=Math.floor(min/60), days=Math.floor(hr/24);
+  if(days>0) return `${days} day${days>1?'s':''} ago`;
+  if(hr>0) return `${hr} hour${hr>1?'s':''} ago`;
+  if(min>0) return `${min} minute${min>1?'s':''} ago`;
+  return 'Just now';
+}
+
+function renderLatestRankings(){
+  const latestContainer=document.getElementById('latestRankings');
+  latestContainer.innerHTML='';
+  const rankings=JSON.parse(localStorage.getItem('barcaRankings'))||[];
+  const latest=rankings.slice(-5).reverse();
+  if(latest.length===0){ latestContainer.innerHTML="<p>No rankings yet.</p>"; return; }
+
+  latest.forEach(r=>{
+    const card=document.createElement('div'); card.className='ranking-card';
+    let html=`<h4>${r.username} (${r.grade}th) <small class="timeAgo" data-ts="${r.timestamp}">${timeAgo(r.timestamp)}</small></h4><ol>`;
+    r.players.forEach((p,i)=>{
+      if(i<5) html+=`<li>${p}</li>`; else html+=`<li class="hidden-players">${p}</li>`;
+    });
+    if(r.players.length>5) html+=`<span class="showMorePlayers">Show More</span>`;
+    html+='</ol>';
+    if(r.comment) html+=`<div class="comment">${r.comment}</div>`;
+    card.innerHTML=html;
+    latestContainer.appendChild(card);
+
+    const showMore=card.querySelector('.showMorePlayers');
+    if(showMore){
+      showMore.addEventListener('click',()=>{
+        const hidden=card.querySelectorAll('.hidden-players');
+        hidden.forEach(li=>{
+          if(li.style.display==='list-item'){ li.style.display='none'; showMore.textContent='Show More'; }
+          else{ li.style.display='list-item'; showMore.textContent='Show Less'; }
+        });
+      });
+    }
+  });
+  updateTimeAgo();
+}
+
+function updateTimeAgo(){
+  document.querySelectorAll('.timeAgo').forEach(el=>{
+    el.textContent=timeAgo(parseInt(el.dataset.ts));
+  });
+}
+
+renderLatestRankings();
+setInterval(updateTimeAgo,60000);
+</script>
+
+</body>
+</html>

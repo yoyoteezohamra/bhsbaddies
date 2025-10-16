@@ -1,0 +1,245 @@
+/* ===================== GENERAL ===================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background: #fff;
+  color: #111;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ===================== HEADER ===================== */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #d40c0c;
+  color: #fff;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+header h1 a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+header h1 a:hover {
+  color: #ffdddd;
+}
+
+.grade-links a, .grade-links .btn {
+  color: white;
+  text-decoration: none;
+  margin-left: 0.5rem;
+  font-weight: bold;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  transition: 0.3s;
+  font-size: 0.9rem;
+}
+
+.grade-links a:hover, .grade-links .btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* ===================== MAIN ===================== */
+main {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally */
+  gap: 2rem;
+}
+
+/* Description box */
+.description {
+  width: 100%;
+  max-width: 500px;
+  background: #fff0f0;
+  border: 2px solid #d40c0c;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.description h2 {
+  color: #d40c0c;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.description p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Buttons */
+.btn2, button, .btn {
+  background: linear-gradient(45deg, #d40c0c, #ff2a2a);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn2:hover, button:hover, .btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ===================== LATEST RANKINGS ===================== */
+.latest-rankings {
+  width: 100%;
+  max-width: 500px;
+}
+
+.latest-rankings h2 {
+  color: #d40c0c;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Ranking cards */
+.ranking-card {
+  background: #fff;
+  border: 2px solid #d40c0c;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.ranking-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.ranking-card h4 {
+  margin-bottom: 0.5rem;
+  color: #d40c0c;
+}
+
+.ranking-card ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.ranking-card li {
+  margin: 0.25rem 0;
+}
+
+.showMorePlayers {
+  color: #d40c0c;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.hidden-players {
+  display: none;
+}
+
+.comment {
+  margin-top: 0.5rem;
+  font-style: italic;
+  color: #333;
+  border-top: 1px solid #d40c0c;
+  padding-top: 0.5rem;
+}
+
+small {
+  font-weight: normal;
+  color: #555;
+  font-size: 0.85rem;
+}
+
+/* ===================== INPUTS ===================== */
+input[type=text], select, textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem;
+  margin-bottom: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #d40c0c;
+  font-size: 1rem;
+  outline: none;
+  transition: 0.2s;
+}
+
+input[type=text]:focus, select:focus, textarea:focus {
+  border-color: #ff2a2a;
+  box-shadow: 0 0 5px rgba(255,0,0,0.4);
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 900px) {
+  main {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 500px) {
+  header {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .grade-links a, .grade-links .btn {
+    margin-left: 0;
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+  }
+
+  .description h2 {
+    font-size: 1.5rem;
+  }
+}
+/* ===================== BADDIE ROW ===================== */
+.baddie-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center horizontally */
+  margin-bottom: 1rem; /* equal spacing between baddie rows */
+}
+
+.baddie-row input {
+  width: 80%;
+  margin-bottom: 0.5rem; /* space between input and remove button */
+}
+
+.baddie-row .remove-player {
+  background: #d40c0c; /* Same red as Add More button */
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.baddie-row .remove-player:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
