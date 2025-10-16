@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Ranking - BHS Baddies</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="title-section">
+    <h1><a href="index.html">BHS Baddies</a></h1>
+    <div class="grade-links">
+      <a href="9.html">9th</a>
+      <a href="10.html">10th</a>
+      <a href="11.html">11th</a>
+      <a href="12.html">12th</a>
+      <a href="create.html" class="btn">Create Your Ranking</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <h2>Create Your Ranking</h2>
+
+  <label for="name">Name:</label>
+  <input type="text" id="name" placeholder="Enter your name">
+
+  <label for="grade">Select your grade:</label>
+  <select id="grade">
+    <option value="9">9th Grade</option>
+    <option value="10">10th Grade</option>
+    <option value="11">11th Grade</option>
+    <option value="12">12th Grade</option>
+  </select>
+
+  <h3>Baddies:</h3>
+  <div id="baddiesContainer"></div>
+  <button type="button" id="addBaddieBtn">Add More</button>
+
+  <h3>Comment:</h3>
+  <textarea id="comment" placeholder="Add your comment here..." rows="4"></textarea>
+
+  <button type="button" id="saveBtn">Save Ranking</button>
+</main>
+
+<script>
+const baddiesContainer = document.getElementById('baddiesContainer');
+const addBaddieBtn = document.getElementById('addBaddieBtn');
+const saveBtn = document.getElementById('saveBtn');
+
+// Add a baddie input row
+function addBaddieField(value='') {
+  const div = document.createElement('div');
+  div.className = 'baddie-row';
+  div.innerHTML = `
+    <input type="text" placeholder="Baddie name" value="${value}">
+    <button type="button" class="remove-player">Remove</button>
+  `;
+  baddiesContainer.appendChild(div);
+
+  // Remove functionality
+  div.querySelector('.remove-player').addEventListener('click', () => div.remove());
+}
+
+// Start with 3 baddie fields
+for(let i=0;i<3;i++) addBaddieField();
+
+// Add more on button click
+addBaddieBtn.addEventListener('click', () => addBaddieField());
+
+// Save ranking
+saveBtn.addEventListener('click', () => {
+  const name = document.getElementById('name').value.trim();
+  const grade = document.getElementById('grade').value;
+  const comment = document.getElementById('comment').value.trim();
+  const baddieInputs = baddiesContainer.querySelectorAll('input');
+  const baddies = Array.from(baddieInputs).map(i => i.value.trim()).filter(p => p !== '');
+  
+  if(!name){ alert('Please enter your name'); return; }
+  if(baddies.length === 0){ alert('Please add at least one baddie'); return; }
+
+  const newRanking = { username: name, grade, players: baddies, comment, timestamp: Date.now() };
+  const rankings = JSON.parse(localStorage.getItem('barcaRankings')) || [];
+  rankings.push(newRanking);
+  localStorage.setItem('barcaRankings', JSON.stringify(rankings));
+
+  alert('Ranking saved!');
+  window.location.href = `${grade}.html`;
+});
+</script>
+
+</body>
+</html>
