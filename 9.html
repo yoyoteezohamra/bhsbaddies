@@ -3,8 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BHS Baddies - 9th Grade</title>
+<title>9th Grade Rankings - BHS Baddies</title>
 <link rel="stylesheet" href="style.css">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCzT0n2tF_E8p5amHHyPErhbe0lOMlP7us",
+  authDomain: "bhsbaddies.firebaseapp.com",
+  projectId: "bhsbaddies",
+  storageBucket: "bhsbaddies.firebasestorage.app",
+  messagingSenderId: "199970593259",
+  appId: "1:199970593259:web:30f05fb927f92206c161ae"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
 </head>
 <body>
 
@@ -22,66 +38,28 @@
 </header>
 
 <main>
-<h2>9th Grade Rankings</h2>
-<div id="gradeRankings"></div>
-<nav style="margin-top:1rem;">
-<a href="create.html" class="btn2">Create Your Ranking</a>
-</nav>
+  <h2>9th Grade Rankings</h2>
+  <div id="rankingsContainer"></div>
 </main>
 
 <script>
-const grade="9"; // change to "10","11","12" for other pages
+const rankingsContainer = document.getElementById('rankingsContainer');
 
-function timeAgo(ts){
-  const now=Date.now(), diff=now-ts;
-  const sec=Math.floor(diff/1000), min=Math.floor(sec/60), hr=Math.floor(min/60), days=Math.floor(hr/24);
-  if(days>0) return `${days} day${days>1?'s':''} ago`;
-  if(hr>0) return `${hr} hour${hr>1?'s':''} ago`;
-  if(min>0) return `${min} minute${min>1?'s':''} ago`;
-  return 'Just now';
-}
-
-function renderGradeRankings(){
-  const container=document.getElementById('gradeRankings');
-  container.innerHTML='';
-  const rankings=JSON.parse(localStorage.getItem('barcaRankings'))||[];
-  const gradeRankings=rankings.filter(r=>r.grade===grade).reverse();
-  if(gradeRankings.length===0){ container.innerHTML="<p>No rankings yet.</p>"; return; }
-
-  gradeRankings.forEach(r=>{
-    const card=document.createElement('div'); card.className='ranking-card';
-    let html=`<h4>${r.username} <small class="timeAgo" data-ts="${r.timestamp}">${timeAgo(r.timestamp)}</small></h4><ol>`;
-    r.players.forEach((p,i)=>{
-      if(i<5) html+=`<li>${p}</li>`; else html+=`<li class="hidden-players">${p}</li>`;
+db.collection("rankings").where("grade", "==", "9").orderBy("timestamp", "desc").get()
+  .then(snapshot => {
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const div = document.createElement('div');
+      div.className = 'ranking-card';
+      div.innerHTML = `
+        <h3>${data.username}'s Rankings</h3>
+        <ol>${data.players.map(p => `<li>${p}</li>`).join('')}</ol>
+        <p>${data.comment}</p>
+      `;
+      rankingsContainer.appendChild(div);
     });
-    if(r.players.length>5) html+=`<span class="showMorePlayers">Show More</span>`;
-    html+='</ol>';
-    if(r.comment) html+=`<div class="comment">${r.comment}</div>`;
-    card.innerHTML=html;
-    container.appendChild(card);
-
-    const showMore=card.querySelector('.showMorePlayers');
-    if(showMore){
-      showMore.addEventListener('click',()=>{
-        const hidden=card.querySelectorAll('.hidden-players');
-        hidden.forEach(li=>{
-          if(li.style.display==='list-item'){ li.style.display='none'; showMore.textContent='Show More'; }
-          else{ li.style.display='list-item'; showMore.textContent='Show Less'; }
-        });
-      });
-    }
-  });
-  updateTimeAgo();
-}
-
-function updateTimeAgo(){
-  document.querySelectorAll('.timeAgo').forEach(el=>{
-    el.textContent=timeAgo(parseInt(el.dataset.ts));
-  });
-}
-
-renderGradeRankings();
-setInterval(updateTimeAgo,60000);
+  })
+  .catch(err => console.error(err));
 </script>
 
 </body>
