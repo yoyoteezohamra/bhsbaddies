@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create Your Ranking - BHS Baddies</title>
 <link rel="stylesheet" href="style.css">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCzT0n2tF_E8p5amHHyPErhbe0lOMlP7us",
+    authDomain: "bhsbaddies.firebaseapp.com",
+    projectId: "bhsbaddies",
+    storageBucket: "bhsbaddies.firebasestorage.app",
+    messagingSenderId: "199970593259",
+    appId: "1:199970593259:web:30f05fb927f92206c161ae"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
 </head>
 <body>
 
@@ -37,12 +53,12 @@
 
   <h3>Baddies:</h3>
   <div id="baddiesContainer"></div>
-  <button type="button" id="addBaddieBtn">Add More</button>
+  <button type="button" id="addBaddieBtn" class="btn2">Add More</button>
 
   <h3>Comment:</h3>
   <textarea id="comment" placeholder="Add your comment here..." rows="4"></textarea>
 
-  <button type="button" id="saveBtn">Save Ranking</button>
+  <button type="button" id="saveBtn" class="btn2">Save Ranking</button>
 </main>
 
 <script>
@@ -50,7 +66,6 @@ const baddiesContainer = document.getElementById('baddiesContainer');
 const addBaddieBtn = document.getElementById('addBaddieBtn');
 const saveBtn = document.getElementById('saveBtn');
 
-// Add a baddie input row
 function addBaddieField(value='') {
   const div = document.createElement('div');
   div.className = 'baddie-row';
@@ -60,7 +75,6 @@ function addBaddieField(value='') {
   `;
   baddiesContainer.appendChild(div);
 
-  // Remove functionality
   div.querySelector('.remove-player').addEventListener('click', () => div.remove());
 }
 
@@ -70,8 +84,8 @@ for(let i=0;i<3;i++) addBaddieField();
 // Add more on button click
 addBaddieBtn.addEventListener('click', () => addBaddieField());
 
-// Save ranking
-saveBtn.addEventListener('click', () => {
+// Save ranking to Firestore
+saveBtn.addEventListener('click', async () => {
   const name = document.getElementById('name').value.trim();
   const grade = document.getElementById('grade').value;
   const comment = document.getElementById('comment').value.trim();
@@ -82,12 +96,15 @@ saveBtn.addEventListener('click', () => {
   if(baddies.length === 0){ alert('Please add at least one baddie'); return; }
 
   const newRanking = { username: name, grade, players: baddies, comment, timestamp: Date.now() };
-  const rankings = JSON.parse(localStorage.getItem('barcaRankings')) || [];
-  rankings.push(newRanking);
-  localStorage.setItem('barcaRankings', JSON.stringify(rankings));
 
-  alert('Ranking saved!');
-  window.location.href = `${grade}.html`;
+  try {
+    await db.collection("rankings").add(newRanking);
+    alert('Ranking saved!');
+    window.location.href = `${grade}.html`;
+  } catch (error) {
+    console.error("Error saving ranking: ", error);
+    alert('Error saving ranking, try again.');
+  }
 });
 </script>
 
