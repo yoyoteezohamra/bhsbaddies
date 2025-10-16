@@ -4,20 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Create Your Ranking - BHS Baddies</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <header>
-  <div class="title-section">
-    <h1><a href="index.html">BHS Baddies</a></h1>
-    <div class="grade-links">
-      <a href="9.html">9th</a>
-      <a href="10.html">10th</a>
-      <a href="11.html">11th</a>
-      <a href="12.html">12th</a>
-      <a href="create.html" class="btn">Create Your Ranking</a>
-    </div>
+  <h1><a href="index.html">BHS Baddies</a></h1>
+  <div class="grade-links">
+    <a href="9.html">9th</a>
+    <a href="10.html">10th</a>
+    <a href="11.html">11th</a>
+    <a href="12.html">12th</a>
+    <a href="create.html" class="btn">Create Your Ranking</a>
   </div>
 </header>
 
@@ -61,91 +59,69 @@
   </form>
 </main>
 
-<!-- Firebase (modular) and Firestore usage as ES modules -->
 <script type="module">
-  // 1) import modules
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  // 2) your firebase config (use your project's values)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCzT0n2tF_E8p5amHHyPErhbe0lOMlP7us",
-    authDomain: "bhsbaddies.firebaseapp.com",
-    projectId: "bhsbaddies",
-    storageBucket: "bhsbaddies.firebasestorage.app",
-    messagingSenderId: "199970593259",
-    appId: "1:199970593259:web:30f05fb927f92206c161ae"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyCzT0n2tF_E8p5amHHyPErhbe0lOMlP7us",
+  authDomain: "bhsbaddies.firebaseapp.com",
+  projectId: "bhsbaddies",
+  storageBucket: "bhsbaddies.appspot.com",
+  messagingSenderId: "199970593259",
+  appId: "1:199970593259:web:30f05fb927f92206c161ae"
+};
 
-  // 3) init
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // 4) helper: add/remove baddie rows
-  const baddiesContainer = document.getElementById('baddiesContainer');
-  const addBaddieBtn = document.getElementById('addBaddieBtn');
+const baddiesContainer = document.getElementById('baddiesContainer');
+const addBaddieBtn = document.getElementById('addBaddieBtn');
 
-  function createBaddieRow(value = '') {
-    const row = document.createElement('div');
-    row.className = 'baddie-row';
-    row.innerHTML = `
-      <input class="baddie-input" type="text" placeholder="Baddie name" value="${value}" />
-      <button type="button" class="remove-player">Remove</button>
-    `;
-    const removeBtn = row.querySelector('.remove-player');
-    removeBtn.addEventListener('click', () => row.remove());
-    return row;
+function createBaddieRow(value = '') {
+  const row = document.createElement('div');
+  row.className = 'baddie-row';
+  row.innerHTML = `
+    <input class="baddie-input" type="text" placeholder="Baddie name" value="${value}" />
+    <button type="button" class="remove-player">Remove</button>
+  `;
+  const removeBtn = row.querySelector('.remove-player');
+  removeBtn.addEventListener('click', () => row.remove());
+  return row;
+}
+
+addBaddieBtn.addEventListener('click', () => {
+  baddiesContainer.appendChild(createBaddieRow(''));
+});
+
+document.querySelectorAll('#baddiesContainer .remove-player').forEach(btn => {
+  btn.addEventListener('click', e => e.target.closest('.baddie-row').remove());
+});
+
+const form = document.getElementById('rankingForm');
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value.trim();
+  const grade = document.getElementById('grade').value;
+  const comment = document.getElementById('comment').value.trim();
+  const baddieInputs = Array.from(document.querySelectorAll('.baddie-input'));
+  const baddies = baddieInputs.map(i => i.value.trim()).filter(Boolean);
+
+  if (!name) return alert('Please enter your name');
+  if (baddies.length === 0) return alert('Please add at least one baddie');
+
+  const docData = { name, grade, baddies, comment, createdAt: serverTimestamp() };
+
+  try {
+    await addDoc(collection(db, 'rankings'), docData);
+    alert('Ranking saved!');
+    window.location.href = `${grade}.html`;
+  } catch (err) {
+    console.error(err);
+    alert('Error saving ranking — try again.');
   }
-
-  addBaddieBtn.addEventListener('click', () => {
-    baddiesContainer.appendChild(createBaddieRow(''));
-  });
-
-  // Attach remove handlers to initial rows
-  document.querySelectorAll('#baddiesContainer .remove-player').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const row = e.target.closest('.baddie-row');
-      if (row) row.remove();
-    });
-  });
-
-  // 5) submit handler: save to Firestore
-  const form = document.getElementById('rankingForm');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById('name').value.trim();
-    const grade = document.getElementById('grade').value;
-    const comment = document.getElementById('comment').value.trim();
-    const baddieInputs = Array.from(document.querySelectorAll('.baddie-input'));
-    const baddies = baddieInputs.map(i => i.value.trim()).filter(Boolean);
-
-    if (!name) { alert('Please enter your name'); return; }
-    if (baddies.length === 0) { alert('Please add at least one baddie'); return; }
-
-    const doc = {
-      name,
-      grade,
-      baddies,
-      comment,
-      createdAt: serverTimestamp()
-    };
-
-    try {
-      await addDoc(collection(db, 'rankings'), doc);
-      alert('Ranking saved!');
-      // redirect to grade page to view it
-      window.location.href = `${grade}.html`;
-    } catch (err) {
-      console.error('Firestore write failed', err);
-      alert('Error saving ranking — try again.');
-    }
-  });
+});
 </script>
 </body>
 </html>
