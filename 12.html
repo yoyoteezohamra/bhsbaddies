@@ -1,116 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>12th Grade Rankings - BHS Baddies</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
 <header>
-  <div class="title-section">
-    <h1><a href="index.html">BHS Baddies</a></h1>
-    <div class="grade-links">
-      <a href="9.html">9th</a>
-      <a href="10.html">10th</a>
-      <a href="11.html">11th</a>
-      <a href="12.html">12th</a>
-      <a href="create.html" class="btn">Create Your Ranking</a>
-    </div>
-  </div>
+  <h1><a href="index.html">BHS Baddies</a></h1>
+  <nav>
+    <a href="9.html">9th</a>
+    <a href="10.html">10th</a>
+    <a href="11.html">11th</a>
+    <a href="12.html">12th</a>
+    <a href="create.html">Create Your Ranking</a>
+  </nav>
 </header>
 
 <main>
   <h2>12th Grade Rankings</h2>
-  <div id="rankingsContainer"></div>
+  <div id="rankingsContainer">Loading...</div>
 </main>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    getDocs,
-    query,
-    where,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCzT0n2tF_E8p5amHHyPErhbe0lOMlP7us",
-    authDomain: "bhsbaddies.firebaseapp.com",
-    projectId: "bhsbaddies",
-    storageBucket: "bhsbaddies.firebasestorage.app",
-    messagingSenderId: "199970593259",
-    appId: "1:199970593259:web:30f05fb927f92206c161ae"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyCzT0n2tF_E8p5amHHyPErhbe0lOMlP7us",
+  authDomain: "bhsbaddies.firebaseapp.com",
+  projectId: "bhsbaddies",
+  storageBucket: "bhsbaddies.firebasestorage.app",
+  messagingSenderId: "199970593259",
+  appId: "1:199970593259:web:30f05fb927f92206c161ae"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  const GRADE = "12";
-  const container = document.getElementById('rankingsContainer');
+const rankingsRef = collection(db, "rankings");
+const q = query(rankingsRef, where("grade", "==", "12"), orderBy("timestamp", "desc"));
 
-  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
-  async function loadGradeRankings() {
-    container.innerHTML = '<p>Loading...</p>';
-    try {
-      const q = query(collection(db, 'rankings'), where('grade','==', GRADE), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
-      container.innerHTML = '';
-      if (snapshot.empty) {
-        container.innerHTML = '<p>No rankings yet.</p>';
-        return;
-      }
-
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const card = document.createElement('div');
-        card.className = 'ranking-card';
-
-        // Build list with Show More handling (first 5 visible)
-        const listHtml = Array.isArray(d.baddies)
-          ? d.baddies.map((b, i) => {
-              if (i < 5) return `<li>${escapeHtml(b)}</li>`;
-              return `<li class="hidden-players" style="display:none">${escapeHtml(b)}</li>`;
-            }).join('')
-          : '';
-
-        card.innerHTML = `
-          <h3>${escapeHtml(d.name)}'s Rankings <small>${/* optional: could show time */''}</small></h3>
-          <ol>${listHtml}</ol>
-          ${ (Array.isArray(d.baddies) && d.baddies.length > 5) ? '<span class="showMorePlayers">Show More</span>' : '' }
-          ${ d.comment ? `<div class="comment">${escapeHtml(d.comment)}</div>` : '' }
-        `;
-
-        container.appendChild(card);
-
-        const showMore = card.querySelector('.showMorePlayers');
-        if (showMore) {
-          showMore.addEventListener('click', () => {
-            const hidden = card.querySelectorAll('.hidden-players');
-            hidden.forEach(li => {
-              if (li.style.display === 'list-item') {
-                li.style.display = 'none';
-                showMore.textContent = 'Show More';
-              } else {
-                li.style.display = 'list-item';
-                showMore.textContent = 'Show Less';
-              }
-            });
-          });
-        }
-      });
-
-    } catch (err) {
-      console.error('Error loading rankings', err);
-      container.innerHTML = '<p>Error loading rankings.</p>';
-    }
-  }
-
-  loadGradeRankings();
+getDocs(q)
+  .then(snapshot => {
+    const container = document.getElementById("rankingsContainer");
+    container.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const div = document.createElement("div");
+      div.className = "ranking-card";
+      div.innerHTML = `
+        <h3>${data.name}'s Rankings</h3>
+        <ol>${data.players.map(p => `<li>${p}</li>`).join("")}</ol>
+        <p>${data.comment || ""}</p>
+      `;
+      container.appendChild(div);
+    });
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById("rankingsContainer").innerText = "Error loading rankings";
+  });
 </script>
 </body>
 </html>
