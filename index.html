@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BHS Baddies</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BHS Baddies</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -21,10 +21,10 @@
   </div>
 </header>
 
-<main class="flex-layout">
+<main>
   <div class="description">
     <h2>Welcome to BHS Baddies!</h2>
-    <p>Have fun ranking! You know what they say, first is the worst, second is the best.....</p>
+    <p>Have fun ranking! You know what they say, 1st is the worst, second is the best.....</p>
     <a href="create.html" class="btn2">Create Your Ranking</a>
   </div>
 
@@ -34,58 +34,71 @@
   </div>
 </main>
 
-<script>
-function timeAgo(timestamp){
-  const now=Date.now(), diff=now-timestamp;
-  const sec=Math.floor(diff/1000), min=Math.floor(sec/60), hr=Math.floor(min/60), days=Math.floor(hr/24);
-  if(days>0) return `${days} day${days>1?'s':''} ago`;
-  if(hr>0) return `${hr} hour${hr>1?'s':''} ago`;
-  if(min>0) return `${min} minute${min>1?'s':''} ago`;
-  return 'Just now';
-}
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    limit
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-function renderLatestRankings(){
-  const latestContainer=document.getElementById('latestRankings');
-  latestContainer.innerHTML='';
-  const rankings=JSON.parse(localStorage.getItem('barcaRankings'))||[];
-  const latest=rankings.slice(-5).reverse();
-  if(latest.length===0){ latestContainer.innerHTML="<p>No rankings yet.</p>"; return; }
+  const firebaseConfig = {
+    apiKey: "AIzaSyCzT0n2tF_E8p5amHHyPErhbe0lOMlP7us",
+    authDomain: "bhsbaddies.firebaseapp.com",
+    projectId: "bhsbaddies",
+    storageBucket: "bhsbaddies.firebasestorage.app",
+    messagingSenderId: "199970593259",
+    appId: "1:199970593259:web:30f05fb927f92206c161ae"
+  };
 
-  latest.forEach(r=>{
-    const card=document.createElement('div'); card.className='ranking-card';
-    let html=`<h4>${r.username} (${r.grade}th) <small class="timeAgo" data-ts="${r.timestamp}">${timeAgo(r.timestamp)}</small></h4><ol>`;
-    r.players.forEach((p,i)=>{
-      if(i<5) html+=`<li>${p}</li>`; else html+=`<li class="hidden-players">${p}</li>`;
-    });
-    if(r.players.length>5) html+=`<span class="showMorePlayers">Show More</span>`;
-    html+='</ol>';
-    if(r.comment) html+=`<div class="comment">${r.comment}</div>`;
-    card.innerHTML=html;
-    latestContainer.appendChild(card);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    const showMore=card.querySelector('.showMorePlayers');
-    if(showMore){
-      showMore.addEventListener('click',()=>{
-        const hidden=card.querySelectorAll('.hidden-players');
-        hidden.forEach(li=>{
-          if(li.style.display==='list-item'){ li.style.display='none'; showMore.textContent='Show More'; }
-          else{ li.style.display='list-item'; showMore.textContent='Show Less'; }
-        });
+  const latestContainer = document.getElementById('latestRankings');
+
+  async function loadLatest() {
+    latestContainer.innerHTML = '<p>Loading...</p>';
+    try {
+      const q = query(collection(db, 'rankings'), orderBy('createdAt', 'desc'), limit(5));
+      const snapshot = await getDocs(q);
+      latestContainer.innerHTML = '';
+      if (snapshot.empty) {
+        latestContainer.innerHTML = '<p>No rankings yet.</p>';
+        return;
+      }
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const card = document.createElement('div');
+        card.className = 'ranking-card';
+        card.innerHTML = `
+          <h4>${escapeHtml(d.name)} (${escapeHtml(d.grade)}th)</h4>
+          <ol>
+            ${Array.isArray(d.baddies) ? d.baddies.map(b => `<li>${escapeHtml(b)}</li>`).join('') : ''}
+          </ol>
+          ${d.comment ? `<div class="comment">${escapeHtml(d.comment)}</div>` : ''}
+        `;
+        latestContainer.appendChild(card);
       });
+    } catch (err) {
+      console.error('Failed to load latest', err);
+      latestContainer.innerHTML = '<p>Error loading rankings.</p>';
     }
-  });
-  updateTimeAgo();
-}
+  }
 
-function updateTimeAgo(){
-  document.querySelectorAll('.timeAgo').forEach(el=>{
-    el.textContent=timeAgo(parseInt(el.dataset.ts));
-  });
-}
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
 
-renderLatestRankings();
-setInterval(updateTimeAgo,60000);
+  loadLatest();
 </script>
-
 </body>
 </html>
